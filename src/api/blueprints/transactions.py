@@ -18,8 +18,8 @@ blueprint = Blueprint('transactions', __name__)
 
 
 @session_scope_func
-def save_transaction(session: Session, data: dict) -> id:
-    trx = Transaction(data=json.dumps(data))
+def save_transaction(session: Session, contract_name: str, func_name: str, data: dict) -> id:
+    trx = Transaction(contract_name=contract_name, func_name=func_name, data=json.dumps(data))
     session.add(trx)
     session.flush()
     return trx.id
@@ -50,7 +50,7 @@ def transactions_create(contract_name: str, func_name: str) -> Response:
         return format_response(data={'errors': form.errors}, error_code=ERROR_FUNCTION_INVALID_FIELDS)
 
     try:
-        pk = save_transaction(form.data)
+        pk = save_transaction(contract_name, func_name, form.data)
     except:
         logger.exception("Can't save transaction to database! With data %s" % form.data)
         return format_response(data={}, error_code=ERROR_TRANSACTION_DB_SAVE)

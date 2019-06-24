@@ -44,6 +44,8 @@ class ApiTransactionsTests(ApiTestCase):
         resp = self.client.get(self.ENDPOINT_TRANSACTION_GET % pk)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json['id'], pk)
+        self.assertEqual(resp.json['contract_name'], 'mockcontract')
+        self.assertEqual(resp.json['func_name'], 'mockaction')
         self.assertIsNotNone(resp.json['data'])
 
     def test_transaction_not_exists(self):

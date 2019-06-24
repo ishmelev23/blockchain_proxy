@@ -16,7 +16,7 @@ logger = getLogger(__name__)
 blueprint = Blueprint('transactions', __name__)
 
 
-def send_transaction(contract_name: str, func_name: str, data: dict) -> str:
+def send_transaction(address: str, abi: str, func_name: str, data: dict) -> str:
     return ''.join([random.choice('0123456789ABCDEF') for i in range(64)])
 
 
@@ -40,7 +40,8 @@ def transactions_create(contract_name: str, func_name: str) -> Response:
         logger.error("Form for contract_name '%s' does not exists" % contract_name)
         return format_response(data={'contract_name': contract_name}, error_code=ERROR_CONTRACT_NOT_SUPPORTED)
 
-    form_class = NAME2FORM[contract_name].get(func_name)
+    contract = NAME2FORM[contract_name]
+    form_class = contract.get(func_name)
     if not form_class:
         return format_response(data={'contract_name': contract_name, 'func_name': func_name},
                                error_code=ERROR_FUNCTION_NOT_SUPPORTED)
@@ -50,7 +51,7 @@ def transactions_create(contract_name: str, func_name: str) -> Response:
         return format_response(data={'errors': form.errors}, error_code=ERROR_FUNCTION_INVALID_FIELDS)
 
     try:
-        trx_hash = send_transaction(contract_name, func_name, request.json)
+        trx_hash = send_transaction(contract['address'], contract['abi'], func_name, request.json)
     except:
         logger.exception("Can't propagate data to blockchain!")
         return format_response(data={}, error_code=ERROR_FUNCTION_CALL)

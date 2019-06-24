@@ -26,4 +26,4 @@ for contract_info in pkgutil.iter_modules(['src/api/forms']):
     })
     for module_info in pkgutil.iter_modules([os.path.join(contract_info.module_finder.path, contract_info.name)]):
         NAME2FORM[contract_info.name][module_info.name] \
-            = importlib.import_module(moduleinfo_to_path(module_info)).ActionForm
+            = importlib.import_module(moduleinfo_to_path(module_info)).FunctionForm

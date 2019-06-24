@@ -51,7 +51,7 @@ def transactions_create(contract_name: str, func_name: str) -> Response:
         return format_response(data={'errors': form.errors}, error_code=ERROR_FUNCTION_INVALID_FIELDS)
 
     try:
-        trx_hash = send_transaction(contract['address'], contract['abi'], func_name, request.json)
+        trx_hash = send_transaction(contract['address'], contract['abi'], form.func_name, request.json)
     except:
         logger.exception("Can't propagate data to blockchain!")
         return format_response(data={}, error_code=ERROR_FUNCTION_CALL)

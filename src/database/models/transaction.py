@@ -11,6 +11,7 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True)
     blocknumber = Column(Integer, nullable=True, default=None)
     trx_hash = Column(String(64), unique=True)
+    data = Column(String(2048))
     published = Column(Boolean, default=False)
     updated = Column(DateTime, default=datetime.datetime.utcnow)
     created = Column(DateTime, default=datetime.datetime.utcnow)
@@ -25,6 +26,7 @@ class Transaction(Base):
             'id': self.id,
             'blocknumber': self.blocknumber,
             'trx_hash': self.trx_hash,
+            'data': self.data,
             'published': self.published,
             'updated': self.updated.timestamp(),
             'created': self.created.timestamp()

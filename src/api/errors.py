@@ -14,7 +14,7 @@ ERROR_MESSAGES = {
     ERROR_FUNCTION_NOT_SUPPORTED: "Function '{func_name} for contract '{contract_name}' doest not supported",
     ERROR_FUNCTION_INVALID_FIELDS: "Function call data contains errors: {errors}",
     ERROR_FUNCTION_CALL: "Failed to propagate data to blockchain",
-    ERROR_TRANSACTION_DB_SAVE: "Failed to track transaction with hash {trx_hash} to database",
-    ERROR_TRANSACTION_NOT_EXISTS: "Transaction with {trx_hash} isn't tracking by that server",
+    ERROR_TRANSACTION_DB_SAVE: "Failed to save to database",
+    ERROR_TRANSACTION_NOT_EXISTS: "Transaction with id={pk} isn't exists",
     ERROR_DATABASE_CONNECTION: "Problems during connection to database"
 }

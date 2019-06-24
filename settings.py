@@ -1,9 +1,14 @@
-from settings_local import *
-
 import os
 from logging import config as loggingConfig
 
 import coloredlogs
+
+if os.environ.get("TESTING") is not None:
+    from settings_local_tests import *
+    TESTING = True
+else:
+    from settings_local import *
+    TESTING = False
 
 BLUEPRINTS_DIR = 'src/api/blueprints/'
 

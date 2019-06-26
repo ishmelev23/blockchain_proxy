@@ -17,6 +17,7 @@ BLUEPRINTS_DIR = 'src/api/blueprints/'
 coloredlogs.install()
 LOGGERS = {
     'version': 1,
+    'disable_existing_loggers': True,
     'formatters': {
         'colored': {
             '()': 'coloredlogs.ColoredFormatter',

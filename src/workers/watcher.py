@@ -1,11 +1,9 @@
 import os
-import sys
 import signal
 
 from threading import Lock, Condition
 from multiprocessing.pool import Pool
 from logging import getLogger
-from time import sleep
 
 from math import ceil
 from sqlalchemy.orm import Session
@@ -46,6 +44,7 @@ def update_transaction_status(w3: Web3, transaction: Transaction):
 def update_transactions_statuses_task(ids: list):
     with session_context(new_engine=True) as session:
         w3 = Blockchain.get_web3()
+        logger.debug("Processing transactions %s" % ids)
         txs = session.query(Transaction).filter(Transaction.id.in_(ids))
         for tx in txs:
             try:
@@ -62,7 +61,7 @@ def get_transactions_ids(session: Session) -> list:
 def update(p: Pool):
     txs = get_transactions_ids()
     package_size = ceil(len(txs) / settings.WATCHER_PROCESS_COUNT)
-    logger.debug("Package size %d" % package_size)
+    logger.info("Package size %d" % package_size)
     if package_size == 0:
         return
     p.map(update_transactions_statuses_task,
@@ -70,20 +69,22 @@ def update(p: Pool):
 
 
 def start_worker(state: State, process_blocker: Condition):
-    logger.debug("Starting watcher with %d workers" % settings.WATCHER_PROCESS_COUNT)
+    logger.info("Starting watcher with %d workers" % settings.WATCHER_PROCESS_COUNT)
     process_blocker.acquire()
     with Pool(settings.WATCHER_PROCESS_COUNT) as pool:
         try:
             while state.active:
+                logger.info("Start new process cycle")
                 update(pool)
+                logger.info("Process cycle ended")
                 if state.active:
                     process_blocker.wait(settings.WATCHER_SLEEP_TIME)
         except:
             logger.exception("Failed during iteration of watcher")
         finally:
-            logger.debug("Ending watching")
+            logger.info("Ending watching")
             process_blocker.release()
-            logger.debug("Ended watching")
+            logger.info("Ended watching")
 
 
 def startup():
@@ -101,7 +102,7 @@ def startup():
             blocker.notify()
         finally:
             blocker.release()
-        logger.debug("Switched off")
+        logger.info("Switched off")
 
     signal.signal(signal.SIGINT, signal_handler)
     start_worker(state, blocker)

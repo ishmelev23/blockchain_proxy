@@ -50,7 +50,7 @@ def transactions_create(contract_name: str, func_name: str) -> Response:
         return format_response(data={'errors': form.errors}, error_code=ERROR_FUNCTION_INVALID_FIELDS)
 
     try:
-        pk = save_transaction(contract_name, func_name, form.data)
+        pk = save_transaction(contract_name, func_name, form.contract_data)
     except:
         logger.exception("Can't save transaction to database! With data %s" % form.data)
         return format_response(data={}, error_code=ERROR_TRANSACTION_DB_SAVE)

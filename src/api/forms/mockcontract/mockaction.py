@@ -8,3 +8,8 @@ class FunctionForm(Form):
 
     name = StringField(validators=[validators.DataRequired()])
     testbool = BooleanField(validators=[validators.DataRequired()])
+
+
+    @property
+    def contract_data(self):
+        return self.data

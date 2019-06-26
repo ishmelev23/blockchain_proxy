@@ -2,7 +2,7 @@ from multiprocessing.pool import Pool
 
 import settings
 from src.database.models.transaction import Transaction
-from src.database.session import session_scope_method, session_context
+from src.database.session import session_context
 from src.workers import watcher
 from tests.base import BaseTestCase
 

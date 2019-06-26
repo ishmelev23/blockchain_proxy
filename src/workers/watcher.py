@@ -2,7 +2,7 @@ import sys
 import signal
 
 from threading import Lock, Condition
-from multiprocessing.dummy import Pool
+from multiprocessing import Pool
 from logging import getLogger
 
 from math import ceil

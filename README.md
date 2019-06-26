@@ -40,7 +40,14 @@ LOGGING_TYPES = ['console']
 
 ## Запуск
 ```
+python3 init_db.py # Инициализация базы данных
 python3 app.py # Запуск development сервера
 python3 worker.py start --name publisher # Запуск сервиса публикации транзакций
 python3 worker.py start --name watcher # Запуск сервиса отслеживания статуса транзакций
+```
+
+## Запуск тестов
+```
+TESTING=1 python3 init_db.py # TESTING=1 указывает подтягивать тестовые настройки
+TESTING=1 python3 -m unittest tests.api.transactions
 ```

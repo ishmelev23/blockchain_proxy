@@ -1,9 +1,11 @@
+import os
 import sys
 import signal
 
 from threading import Lock, Condition
-from multiprocessing import Pool
+from multiprocessing.pool import Pool
 from logging import getLogger
+from time import sleep
 
 from math import ceil
 from sqlalchemy.orm import Session
@@ -60,40 +62,46 @@ def get_transactions_ids(session: Session) -> list:
 def update(p: Pool):
     txs = get_transactions_ids()
     package_size = ceil(len(txs) / settings.WATCHER_PROCESS_COUNT)
+    logger.debug("Package size %d" % package_size)
     if package_size == 0:
         return
-    logger.debug("Package size %d" % package_size)
     p.map(update_transactions_statuses_task,
           [txs[i * package_size:i * package_size + package_size] for i in range(settings.WATCHER_PROCESS_COUNT)])
 
 
 def start_worker(state: State, process_blocker: Condition):
     logger.debug("Starting watcher with %d workers" % settings.WATCHER_PROCESS_COUNT)
-    with Pool(settings.WATCHER_PROCESS_COUNT) as p:
-        process_blocker.acquire()
+    process_blocker.acquire()
+    with Pool(settings.WATCHER_PROCESS_COUNT) as pool:
         try:
             while state.active:
-                update(p)
+                update(pool)
                 if state.active:
                     process_blocker.wait(settings.WATCHER_SLEEP_TIME)
+        except:
+            logger.exception("Failed during iteration of watcher")
         finally:
-            logger.debug("End watching")
+            logger.debug("Ending watching")
             process_blocker.release()
+            logger.debug("Ended watching")
 
 
 def startup():
     blocker = Condition(Lock())
     state = State(active=True)
+    mainpid = os.getpid()
 
     def signal_handler(sig, frame):
+        if mainpid != os.getpid():
+            return
+
         state.active = False
         try:
             blocker.acquire()
             blocker.notify()
         finally:
             blocker.release()
-        logger.debug("Ended")
-        sys.exit(0)
+        logger.debug("Switched off")
 
     signal.signal(signal.SIGINT, signal_handler)
     start_worker(state, blocker)

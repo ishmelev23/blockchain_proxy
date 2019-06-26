@@ -8,7 +8,7 @@ from tests.base import ApiTestCase
 
 class ApiTransactionsTests(ApiTestCase):
     ENDPOINT_CONTRACT_CALL = API_ENDPOINT + 'contracts/%s/%s'
-    ENDPOINT_TRANSACTION_GET = API_ENDPOINT + 'transactions/%s'
+    ENDPOINT_TRANSACTION_GET = API_ENDPOINT + 'transactions/%d'
 
     @classmethod
     @session_scope_method
@@ -40,12 +40,15 @@ class ApiTransactionsTests(ApiTestCase):
     def test_valid_transaction_request(self):
         resp = self.client.post(self.ENDPOINT_CONTRACT_CALL % ('mockcontract', 'mockaction'),
                                 data={'name': "123", 'testbool': True})
-        trx_hash = resp.json['trx_hash']
-        resp = self.client.get(self.ENDPOINT_TRANSACTION_GET % trx_hash)
+        pk = resp.json['id']
+        resp = self.client.get(self.ENDPOINT_TRANSACTION_GET % pk)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json['trx_hash'], trx_hash)
+        self.assertEqual(resp.json['id'], pk)
+        self.assertEqual(resp.json['contract_name'], 'mockcontract')
+        self.assertEqual(resp.json['func_name'], 'mockaction')
+        self.assertIsNotNone(resp.json['data'])
 
     def test_transaction_not_exists(self):
-        resp = self.client.get(self.ENDPOINT_TRANSACTION_GET % '123')
+        resp = self.client.get(self.ENDPOINT_TRANSACTION_GET % 123)
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(ERROR_TRANSACTION_NOT_EXISTS, resp.json['error_code'])

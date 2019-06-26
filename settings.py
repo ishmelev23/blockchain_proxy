@@ -1,13 +1,15 @@
 import os
-from logging import config as loggingConfig
+from logging import config
 
 import coloredlogs
 
 if os.environ.get("TESTING") is not None:
     from settings_local_tests import *
+
     TESTING = True
 else:
     from settings_local import *
+
     TESTING = False
 
 BLUEPRINTS_DIR = 'src/api/blueprints/'
@@ -15,6 +17,7 @@ BLUEPRINTS_DIR = 'src/api/blueprints/'
 coloredlogs.install()
 LOGGERS = {
     'version': 1,
+    'disable_existing_loggers': True,
     'formatters': {
         'colored': {
             '()': 'coloredlogs.ColoredFormatter',
@@ -53,14 +56,10 @@ LOGGERS = {
         },
     },
     'loggers': {
-        'gateways': {
+        'src': {
             'level': 'DEBUG',
             'handlers': [logging_type + ['', 'Debug'][DEBUG] for logging_type in LOGGING_TYPES]
-        },
-        'server': {
-            'level': 'DEBUG',
-            'handlers': [logging_type + ['', 'Debug'][DEBUG] for logging_type in LOGGING_TYPES]
-        },
+        }
     }
 }
-loggingConfig.dictConfig(LOGGERS)
+config.dictConfig(LOGGERS)

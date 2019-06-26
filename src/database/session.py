@@ -1,6 +1,26 @@
+from contextlib import contextmanager
+
 from sqlalchemy.orm import sessionmaker
 
-from src.database.base import DATABASE
+from src.database.base import DATABASE, create_engine, Base
+
+
+@contextmanager
+def session_context(new_engine=False):
+    if new_engine:
+        engine = create_engine()
+        Base.prepare(engine)
+    else:
+        engine = DATABASE
+    session = sessionmaker(engine)()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def session_scope_func(func):

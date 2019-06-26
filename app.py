@@ -4,8 +4,8 @@ from flask import Flask
 
 from settings import BLUEPRINTS_DIR, API_ENDPOINT
 
-from src.utils import moduleinfo_to_path
 import src.database
+from src.utils import moduleinfo_to_path
 
 app = Flask(__name__)
 

@@ -4,11 +4,14 @@ import settings
 from app import app
 
 
-class ApiTestCase(TestCase):
+class BaseTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
         assert settings.TESTING, "Trying to start tests in non testing mode. You should setup TESTING env variable"
+
+
+class ApiTestCase(BaseTestCase):
 
     def setUp(self) -> None:
         app.config['TESTING'] = True

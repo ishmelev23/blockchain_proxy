@@ -1,7 +1,7 @@
 import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from src.database import Base
+from src.database.base import Base
 
 
 class Transaction(Base):
@@ -10,11 +10,11 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True)
     blocknumber = Column(Integer, nullable=True, default=None)
-    trx_hash = Column(String(64), unique=True)
+    blockhash = Column(String(66), nullable=True, default=None)
+    trx_hash = Column(String(66), unique=True)
     contract_name = Column(String(255))
     func_name = Column(String(255))
     data = Column(String(2048))
-    published = Column(Boolean, default=False)
     updated = Column(DateTime, default=datetime.datetime.utcnow)
     created = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -31,7 +31,6 @@ class Transaction(Base):
             'contract_name': self.contract_name,
             'func_name': self.func_name,
             'data': self.data,
-            'published': self.published,
             'updated': self.updated.timestamp(),
             'created': self.created.timestamp()
         }

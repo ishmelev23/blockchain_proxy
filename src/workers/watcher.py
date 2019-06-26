@@ -46,7 +46,10 @@ def update_transactions_statuses_task(ids: list):
         w3 = Blockchain.get_web3()
         txs = session.query(Transaction).filter(Transaction.id.in_(ids))
         for tx in txs:
-            update_transaction_status(w3, tx)
+            try:
+                update_transaction_status(w3, tx)
+            except:
+                logger.exception("Can't update transaction status for tx with id %d" % tx.id)
 
 
 @session_scope_func

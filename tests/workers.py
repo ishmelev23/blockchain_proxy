@@ -1,9 +1,14 @@
+import json
+from multiprocessing import Lock, Value, Manager
 from multiprocessing.pool import Pool
 
+from sqlalchemy.orm import Session
+
 import settings
+from src.blockchain import Blockchain
 from src.database.models.transaction import Transaction
-from src.database.session import session_context
-from src.workers import watcher
+from src.database.session import session_context, session_scope_method
+from src.workers import watcher, publisher
 from tests.base import BaseTestCase
 
 
@@ -23,9 +28,12 @@ class WorkersTests(BaseTestCase):
         "0x52dc705f2f10ad378d2c9eb0f02dfae3e8145317b525b6d5e04209cff81102ab"
     ]
 
+    def _clear_transactions(self, session: Session):
+        session.query(Transaction).delete()
+
     def _watcher_test(self, count: int):
         with session_context() as session:
-            session.query(Transaction).delete()
+            self._clear_transactions(session)
 
             for tx_hash in self.WATCHING_TRXS[:count]:
                 tx = Transaction(trx_hash=tx_hash, contract_name="bokky_token", func_name="transfer")
@@ -35,8 +43,7 @@ class WorkersTests(BaseTestCase):
             watcher.update(p)
 
         with session_context() as session:
-            self.assertGreater(session.query(Transaction).filter(Transaction.blockhash != None).count(), 0)
-            self.assertEqual(0, session.query(Transaction).filter(Transaction.blockhash == None).count())
+            self.assertEqual(session.query(Transaction).filter(Transaction.blockhash != None).count(), count)
 
     def test_watcher_12(self):
         self._watcher_test(len(self.WATCHING_TRXS))
@@ -52,3 +59,37 @@ class WorkersTests(BaseTestCase):
 
     def test_watcher_1(self):
         self._watcher_test(3)
+
+    def _make_bokky_transfer(self) -> Transaction:
+        return Transaction(contract_name='bokky_token', func_name='transfer',
+                           data=json.dumps({
+                               '_to': '0x09F18D3a25747A9BA6e10c1F24db6a3c080F4a4E',
+                               '_amount': 1
+                           })
+                           )
+
+    @session_scope_method
+    def _publisher_test(self, session: Session, count: int):
+        self._clear_transactions(session)
+        for i in range(count):
+            tx = self._make_bokky_transfer()
+            session.add(tx)
+        session.commit()
+
+        w3 = Blockchain.get_web3()
+        with Pool(settings.PUBLISHER_PROCESS_COUNT) as p, Manager() as manager:
+            lock = manager.Lock()
+            nonce = manager.Value('i', w3.eth.getTransactionCount(settings.ADDRESS))
+            publisher.update(p, lock, nonce)
+
+        with session_context() as session:
+            self.assertEqual(session.query(Transaction).filter(Transaction.trx_hash != None).count(), count)
+
+    def test_publisher_1(self):
+        self._publisher_test(1)
+
+    def test_publisher_4(self):
+        self._publisher_test(4)
+
+    def test_publisher_10(self):
+        self._publisher_test(10)

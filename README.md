@@ -51,3 +51,10 @@ python3 worker.py start --name watcher # Запуск сервиса отсле�
 TESTING=1 python3 init_db.py # TESTING=1 указывает подтягивать тестовые настройки
 TESTING=1 python3 -m unittest tests.api.transactions
 ```
+
+## Взаимодействие
+Имеются 2 основных endpoint'a
+```
+POST /api/v1/contracts/[contract_name]/[function_name]
+GET /api/v1/trasnsactions/[id]
+```

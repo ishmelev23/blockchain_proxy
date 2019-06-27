@@ -69,11 +69,11 @@ def update(p: Pool, lock: Lock, nonce: Value):
 
     p.map(partial(publish_transactions_task, lock, nonce),
           [(txs[i * package_size:i * package_size + package_size])
-           for i in range(settings.WATCHER_PROCESS_COUNT)])
+           for i in range(settings.PUBLISHER_PROCESS_COUNT)])
 
 
 def start_worker(state: State, process_blocker: TCondition):
-    logger.info("Starting publisher with %d workers" % settings.WATCHER_PROCESS_COUNT)
+    logger.info("Starting publisher with %d workers" % settings.PUBLISHER_PROCESS_COUNT)
 
     w3 = Blockchain.get_web3()
 

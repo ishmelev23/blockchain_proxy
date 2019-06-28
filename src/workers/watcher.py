@@ -55,7 +55,8 @@ def update_transactions_statuses_task(ids: list):
 
 @session_scope_func
 def get_transactions_ids(session: Session) -> list:
-    return [id for id, in session.query(Transaction.id).filter(Transaction.blocknumber == None).all()]
+    return [id for id, in session.query(Transaction.id)
+        .filter(Transaction.blocknumber == None, Transaction.trx_hash != None).all()]
 
 
 def update(p: Pool):
